@@ -1,7 +1,7 @@
 import { Component, ViewChild } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
 import "ag-grid-enterprise";
-import { GridOptions,  GridApi,IServerSideDatasource ,IServerSideGetRowsParams } from 'ag-grid-community';
+import { GridOptions,  GridApi,IServerSideDatasource ,IServerSideGetRowsParams,RowNode } from 'ag-grid-community';
 import { analyzeAndValidateNgModules } from '@angular/compiler';
 
 @Component({
@@ -53,9 +53,7 @@ export class AppComponent {
     getRows: (params: IServerSideGetRowsParams) => {
       this.apiService().subscribe(data => {
         console .log (data);
-       var rowsThisPage = data.slice(params.request.startRow,(params.request.startRow+params.request.endRow)/2);       //  this is to fake a server side data return which is only a
-       // portion of the number of  requested rows from UI. This is what happened in my case when I do a grouping on the server side which reduces the number of rows returned
-       //  e.g. if I request for 100 rows, I get 100 rows from the SQL db and do the grouping . After the grouping, the number of rows get reduced to 50-70 depending the grouping
+       var rowsThisPage = data.slice(params.request.startRow,params.request.startRow+params.request.endRow);      
        this.totalRowsLoaded = this.totalRowsLoaded + this.cacheBlockSize;
 
        var lastRow = this.maximumNumberOfCallToServer >5 ? this.totalRowsLoaded : -1; // to limit the number of calls to the server
@@ -67,6 +65,10 @@ export class AppComponent {
           lastRow
         );
         },500)
+        this.gridApi.forEachNodeAfterFilter((rowNode :RowNode) =>{
+          console.log('node ' + rowNode.data.country + ' passes the filter'); // Here i want to do operations for each node
+      });
+
       })
     }
   }
